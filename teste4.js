@@ -1,13 +1,20 @@
-var data =  require("./fakeData");
+var data = require("./fakeData");
+var permissionMiddleware = require("./teste6");
 
-module.exports =  function(req, res) {
-  
-    var id =  req.query.id;
+module.exports = function (req, res) {
+  var id = req.query.id;
+  var updatedUser = req.body;
 
-    const reg = data.find(d => id == id);
-    reg.name = req.body.name;
-    reg.job = req.body.job;
+  var userIndex = data.findIndex((user) => user.id === id);
 
-    res.send(reg);
-
+  if (userIndex !== -1) {
+    // Validar permissões antes de atualizar
+    req.permission = "update";
+    permissionMiddleware(req, res, function () {
+      data[userIndex] = { ...data[userIndex], ...updatedUser };
+      res.send(data[userIndex]);
+    });
+  } else {
+    res.status(404).send("Usuário não localizado!");
+  }
 };

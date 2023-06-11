@@ -1,15 +1,19 @@
-var data =  require("./fakeData");
+var data = require("./fakeData");
+var permissionMiddleware = require("./teste6");
 
-module.exports = function(req, res) {
-  
-    var name =  req.query.name;
+module.exports = function (req, res) {
+  var name = req.query.name;
 
-    for(let i = 0; i < data.length;  i++) {
-        if(i.name == name) {
-            data[i] = null;
-        }
-    }
+  var index = data.findIndex((user) => user.name === name);
 
-    res.send("success");
-
+  if (index !== -1) {
+    // Validar permissões antes de deletar
+    req.permission = "delete";
+    permissionMiddleware(req, res, function () {
+      data.splice(index, 1);
+      res.send("success");
+    });
+  } else {
+    res.status(404).send("Usuário não encontrado!");
+  }
 };
